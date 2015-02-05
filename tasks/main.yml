@@ -1,0 +1,48 @@
+---
+- name: apt-get update
+  apt: update_cache=yes
+  ignore_errors: True
+
+- name: install deps
+  apt: name={{ item }}
+  with_items:
+      - curl
+
+- name: check if GPG key is present
+  command: bash -c "gpg -k | grep D39DC0E3"
+  ignore_errors: true
+  register: result
+
+- name: Import GPG keys
+  command: 'gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3'
+  changed_when: False
+  when: result|failed
+
+# - name: Import GPG keys
+#   apt_key: url=http://keys.gnupg.net/pks/lookup?op=get&fingerprint=on&search=0xD39DC0E3 state=present
+
+- name: check if RVM is installed
+  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm"
+  ignore_errors: true
+  register: result
+  sudo: yes
+
+- name: install RVM
+  command: bash -c "curl -L https://get.rvm.io | bash -s stable"
+  sudo: yes
+  when: result|failed
+
+- name: install Ruby
+  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm install ruby"
+  sudo: yes
+
+- name: add source rvm for all users
+  copy: src=rvm-env.sh
+        dest=/etc/profile.d/rvm-env.sh
+        owner=root
+        group=root
+        mode=0644
+
+- name: set a default Ruby
+  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm use ruby --default"
+  sudo: yes
