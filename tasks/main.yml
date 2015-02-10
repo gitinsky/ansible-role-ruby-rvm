@@ -27,6 +27,10 @@
   register: result
   sudo: yes
 
+- name: update CA as they might be missong in lxc containers
+  command: update-ca-certificates
+  when: result|failed
+
 - name: install RVM
   command: bash -c "curl -L https://get.rvm.io | bash -s stable"
   sudo: yes
