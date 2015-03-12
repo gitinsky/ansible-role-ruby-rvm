@@ -1,12 +1,20 @@
 ---
+- name: check if RVM is installed
+  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm"
+  ignore_errors: true
+  register: result_rvm
+  sudo: yes
+
 - name: apt-get update
   apt: update_cache=yes
   ignore_errors: True
+  when: result_rvm|failed
 
 - name: install deps
   apt: name={{ item }}
   with_items:
       - curl
+  when: result_rvm|failed
 
 - name: check if GPG key is present
   command: bash -c "gpg -k | grep D39DC0E3"
@@ -21,20 +29,14 @@
 # - name: Import GPG keys
 #   apt_key: url=http://keys.gnupg.net/pks/lookup?op=get&fingerprint=on&search=0xD39DC0E3 state=present
 
-- name: check if RVM is installed
-  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm"
-  ignore_errors: true
-  register: result
-  sudo: yes
-
 - name: update CA as they might be missong in lxc containers
   command: update-ca-certificates
-  when: result|failed
+  when: result_rvm|failed
 
 - name: install RVM
   command: bash -c "curl -L https://get.rvm.io | bash -s stable"
   sudo: yes
-  when: result|failed
+  when: result_rvm|failed
 
 - name: install Ruby
   command: bash -c "source /usr/local/rvm/scripts/rvm && rvm install ruby"
