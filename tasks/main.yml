@@ -1,46 +1,57 @@
 ---
 - name: check if RVM is installed
   command: bash -c "source /usr/local/rvm/scripts/rvm && rvm"
-  ignore_errors: true
+  changed_when: no
   register: result_rvm
   sudo: yes
+  tags: rvm
 
 - name: apt-get update
   apt: update_cache=yes
   ignore_errors: True
-  when: result_rvm|failed
+  when: result_rvm.rc > 0
+  tags: rvm
 
 - name: install deps
   apt: name={{ item }}
   with_items:
       - curl
-  when: result_rvm|failed
+  when: result_rvm.rc > 0
+  tags: rvm
 
 - name: check if GPG key is present
   command: bash -c "gpg -k | grep D39DC0E3"
-  ignore_errors: true
+  changed_when: no
   register: result
+  tags: rvm
 
 - name: Import GPG keys
   command: 'gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3'
-  changed_when: False
-  when: result|failed
+  register: rvm_key_import
+  changed_when: "'imported:' in rvm_key_import.stderr"
+  when: result.rc > 0
+  tags: rvm
 
 # - name: Import GPG keys
 #   apt_key: url=http://keys.gnupg.net/pks/lookup?op=get&fingerprint=on&search=0xD39DC0E3 state=present
 
-- name: update CA as they might be missong in lxc containers
+- name: update CA as they might be missing in lxc containers
   command: update-ca-certificates
-  when: result_rvm|failed
+  when: result_rvm.rc > 0
+  tags: rvm
 
 - name: install RVM
   command: bash -c "curl -L https://get.rvm.io | bash -s stable"
   sudo: yes
-  when: result_rvm|failed
+  when: result_rvm.rc > 0
+  tags: rvm
 
 - name: install Ruby
   command: bash -c "source /usr/local/rvm/scripts/rvm && rvm install ruby"
+  register: result_ruby_install
+  changed_when: "'Already installed' not in result_ruby_install.stderr"
   sudo: yes
+  tags: rvm
 
 - name: add source rvm for all users
   copy: src=rvm-env.sh
@@ -48,7 +59,9 @@
         owner=root
         group=root
         mode=0644
+  tags: rvm
 
 - name: set a default Ruby
   command: bash -c "source /usr/local/rvm/scripts/rvm && rvm use ruby --default"
   sudo: yes
+  tags: rvm
