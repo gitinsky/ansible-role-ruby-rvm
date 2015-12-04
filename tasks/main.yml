@@ -49,7 +49,7 @@
   tags: rvm
 
 - name: install Ruby
-  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm install ruby"
+  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm install {{ ruby_version }}"
   register: result_ruby_install
   changed_when: "'Already installed' not in result_ruby_install.stderr"
   sudo: yes
@@ -64,6 +64,6 @@
   tags: rvm
 
 - name: set a default Ruby
-  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm use ruby --default"
+  command: bash -c "source /usr/local/rvm/scripts/rvm && rvm use {{ ruby_version }} --default"
   sudo: yes
   tags: rvm
