@@ -10,11 +10,11 @@
 - name: apt-get update
   apt: update_cache=yes
   ignore_errors: True
-  when: result_rvm.rc > 0
+  when: "result_rvm.rc > 0 and ansible_os_family == 'Debian'"
   tags: rvm
 
 - name: install deps
-  apt: name={{ item }}
+  package: name={{ item }}
   with_items:
       - curl
   when: result_rvm.rc > 0
@@ -39,7 +39,7 @@
 
 - name: update CA as they might be missing in lxc containers
   command: update-ca-certificates
-  when: result_rvm.rc > 0
+  when: "result_rvm.rc > 0 and ansible_os_family == 'Debian'"
   tags: rvm
 
 - name: install RVM
