@@ -4,7 +4,7 @@
   register: result_rvm
   changed_when: result_rvm.rc > 0
   failed_when: no
-  sudo: yes
+  become: yes
   tags: rvm
 
 - name: apt-get update
@@ -44,7 +44,7 @@
 
 - name: install RVM
   command: bash -c "curl -L https://get.rvm.io | bash -s stable"
-  sudo: yes
+  become: yes
   when: result_rvm.rc > 0
   tags: rvm
 
@@ -52,7 +52,7 @@
   command: bash -c "source /usr/local/rvm/scripts/rvm && rvm install {{ ruby_version }}"
   register: result_ruby_install
   changed_when: "'Already installed' not in result_ruby_install.stderr"
-  sudo: yes
+  become: yes
   tags: rvm
 
 - name: add source rvm for all users
@@ -65,5 +65,5 @@
 
 - name: set a default Ruby
   command: bash -c "source /usr/local/rvm/scripts/rvm && rvm use {{ ruby_version }} --default"
-  sudo: yes
+  become: yes
   tags: rvm
