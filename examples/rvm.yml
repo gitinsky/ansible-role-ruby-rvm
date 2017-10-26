@@ -1,5 +1,5 @@
 - hosts: rvm-hosts
-  sudo: yes
+  become: yes
   roles:
     - role: rvm
 
