@@ -17,6 +17,7 @@
   package: name={{ item }}
   with_items:
       - curl
+      - gpgv2
   when: result_rvm.rc > 0
   tags: rvm
 
@@ -28,7 +29,7 @@
   tags: rvm
 
 - name: Import GPG keys
-  command: 'gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3'
+  command: 'gpg2 --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB'
   register: rvm_key_import
   changed_when: "'imported:' in rvm_key_import.stderr"
   when: result.rc > 0
@@ -43,7 +44,7 @@
   tags: rvm
 
 - name: install RVM
-  command: bash -c "curl -L https://get.rvm.io | bash -s stable"
+  command: bash -c "curl -sSL https://get.rvm.io| bash -s stable"
   become: yes
   when: result_rvm.rc > 0
   tags: rvm
