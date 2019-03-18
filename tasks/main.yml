@@ -33,6 +33,9 @@
   register: rvm_key_import
   changed_when: "'imported:' in rvm_key_import.stderr"
   when: result.rc > 0
+  retries: 3
+  delay: 10
+  until: rvm_key_import is not failed
   tags: rvm
 
 # - name: Import GPG keys
