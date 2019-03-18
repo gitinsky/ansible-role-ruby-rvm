@@ -17,7 +17,6 @@
   package: name={{ item }}
   with_items:
       - curl
-      - gpgv2
   when: result_rvm.rc > 0
   tags: rvm
 
